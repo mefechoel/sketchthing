@@ -9,7 +9,7 @@
     "build:spa": "npm run check-ts && npm run build:spa:nocheck",
     "build:packages": "npm run check-ts && npm run build:spa:nocheck",
     "copy-licenses": "node scripts/copyLicenses.js",
-    "build": "npm run build:packages && npm run copy-licenses",
+    "build": "npm run build:spa:nocheck && npm run copy-licenses",
     "serve": "vite preview",
     "subset": "node subset.mjs",
     "font-comp": "node font"
