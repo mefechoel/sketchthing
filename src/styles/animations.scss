@@ -1,0 +1,12 @@
+@mixin fadeIn {
+	animation: fadeInAnimation 200ms ease forwards;
+
+	@keyframes fadeInAnimation {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+}

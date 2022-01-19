@@ -1,0 +1,17 @@
+@mixin hugeScreen {
+	@media screen and (min-width: 120em) {
+		@content;
+	}
+}
+
+@mixin wideScreen {
+	@media screen and (min-width: 60em) {
+		@content;
+	}
+}
+
+@mixin smallScreen {
+	@media screen and (min-width: 30em) {
+		@content;
+	}
+}

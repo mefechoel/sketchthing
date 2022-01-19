@@ -1,0 +1,41 @@
+@use "sass:math";
+
+// Default values
+$minViewport: 17.77rem;
+$maxViewport: 97.22rem;
+$minScale: 1.33;
+$maxScale: 1.681;
+
+@function stripUnit($value) {
+	@return math.div($value, ($value * 0 + 1));
+}
+
+@mixin fontSize(
+	$exp: 0,
+	$minScale: $minScale,
+	$maxScale: $maxScale,
+	$minViewport: $minViewport,
+	$maxViewport: $maxViewport,
+	$property: font-size
+) {
+	$numMinSize: math.pow($minScale, $exp);
+	$numMaxSize: math.pow($maxScale, $exp);
+
+	& {
+		#{$property}: #{$numMinSize}rem;
+
+		@media only screen and (min-width: $minViewport) {
+			#{$property}: calc(
+				#{$numMinSize}rem + (#{$numMaxSize} - #{$numMinSize}) *
+					(
+						(100vw - #{$minViewport}) /
+							(#{stripUnit($maxViewport)} - #{stripUnit($minViewport)})
+					)
+			);
+		}
+
+		@media only screen and (min-width: $maxViewport) {
+			#{$property}: #{$numMaxSize}rem;
+		}
+	}
+}
