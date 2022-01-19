@@ -117,11 +117,42 @@ function App(): JSX.Element {
 		drawingFn?.(sorted);
 	};
 
+	const handleClick = (p: p5) => {
+		const {
+			edgeDetectionWidth: w,
+			edgeDetectionBitDepth: bd,
+			maxDist: d,
+			dropOutPercentage: pc,
+			bgAlpha: ba,
+			colAlpha: ca,
+			strokeWeight: s,
+			drawingFnName: fn,
+			randomDropout: r,
+		} = getStateValues(stateRef.current);
+		const hash = [
+			w,
+			bd,
+			d,
+			pc.toString().replace(".", ""),
+			ba,
+			ca,
+			s,
+			Number(r),
+			fn,
+		].join("-");
+		p.saveCanvas(`sketch__${hash}.png`);
+	};
+
 	return (
 		<>
 			<main>
 				<h1>hello</h1>
-				<Sketch className={style.canvas} setup={setup} draw={draw} />
+				<Sketch
+					className={style.canvas}
+					setup={setup}
+					draw={draw}
+					mouseClicked={handleClick}
+				/>
 				<ControlPanel
 					isLoopingRef={isLoopingRef}
 					p5Ref={p5Ref}
