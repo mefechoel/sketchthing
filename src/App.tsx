@@ -117,7 +117,7 @@ function App(): JSX.Element {
 		drawingFn?.(sorted);
 	};
 
-	const handleClick = (p: p5) => {
+	const handleClick = () => {
 		const {
 			edgeDetectionWidth: w,
 			edgeDetectionBitDepth: bd,
@@ -140,19 +140,20 @@ function App(): JSX.Element {
 			Number(r),
 			fn,
 		].join("-");
-		p.saveCanvas(`sketch__${hash}.png`);
+		p5Ref.current?.saveCanvas(`sketch__${hash}.png`);
 	};
 
 	return (
 		<>
 			<main>
 				<h1>hello</h1>
-				<Sketch
-					className={style.canvas}
-					setup={setup}
-					draw={draw}
-					mouseClicked={handleClick}
-				/>
+				<div onClick={handleClick}>
+					<Sketch
+						className={style.canvas}
+						setup={setup}
+						draw={draw}
+					/>
+				</div>
 				<ControlPanel
 					isLoopingRef={isLoopingRef}
 					p5Ref={p5Ref}
