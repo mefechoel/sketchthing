@@ -65,13 +65,13 @@ function useSlider<ElementType extends HTMLElement = HTMLElement>(
 	);
 
 	useEffect(() => {
-		const handleMouseMove = (e: MouseEvent) => {
+		const handleMove = (clientX: number) => {
 			const slider = sliderRef.current;
 			if (!slider || !isMousePressedRef.current) return;
 			const { left: xMin, right: xMax } = slider.getBoundingClientRect();
 			const thumbWidth = getThumbWidthRef.current();
 			const pxWidth = xMax - xMin - thumbWidth;
-			const xOffset = e.clientX - xMin - thumbWidth / 2;
+			const xOffset = clientX - xMin - thumbWidth / 2;
 			const mousePosition = clamp(xOffset / pxWidth, 0, 1);
 			const rangeWidth = maxRef.current - minRef.current;
 			const maxNumSteps = rangeWidth / stepRef.current;
@@ -79,25 +79,40 @@ function useSlider<ElementType extends HTMLElement = HTMLElement>(
 			const nextValue = closestStep * stepRef.current + minRef.current;
 			handleChange(nextValue);
 		};
+		const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
+		const handleTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX);
 
-		const handleMouseDown = (e: MouseEvent) => {
-			if (!sliderRef.current?.contains(e.target as Node | null)) return;
+		const handleDown = (target: EventTarget | null, clientX: number) => {
+			if (
+				sliderRef.current &&
+				!sliderRef.current.contains(target as Node | null)
+			) {
+				return;
+			}
 			isMousePressedRef.current = true;
-			handleMouseMove(e);
+			handleMove(clientX);
 		};
+		const handleMouseDown = (e: MouseEvent) => handleDown(e.target, e.clientX);
+		const handleTouchStart = (e: TouchEvent) =>
+			handleDown(e.target, e.touches[0].clientX);
 
-		const handleMouseUp = (e: MouseEvent) => {
-			handleMouseMove(e);
+		const handleUp = () => {
 			isMousePressedRef.current = false;
 		};
 
-		document.addEventListener("mousemove", handleMouseMove);
 		document.addEventListener("mousedown", handleMouseDown);
-		document.addEventListener("mouseup", handleMouseUp);
+		document.addEventListener("touchstart", handleTouchStart);
+		document.addEventListener("mousemove", handleMouseMove);
+		document.addEventListener("touchmove", handleTouchMove);
+		document.addEventListener("mouseup", handleUp);
+		document.addEventListener("touchend", handleUp);
 		return () => {
-			document.removeEventListener("mousemove", handleMouseMove);
 			document.removeEventListener("mousedown", handleMouseDown);
-			document.removeEventListener("mouseup", handleMouseUp);
+			document.removeEventListener("touchstart", handleTouchStart);
+			document.removeEventListener("mousemove", handleMouseMove);
+			document.removeEventListener("touchmove", handleTouchMove);
+			document.removeEventListener("mouseup", handleUp);
+			document.removeEventListener("touchend", handleUp);
 		};
 	}, [getThumbWidthRef, handleChange, maxRef, minRef, sliderRef, stepRef]);
 
