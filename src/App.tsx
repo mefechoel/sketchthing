@@ -1,8 +1,9 @@
 import "./index.scss";
-import type p5 from "p5";
+import type p5 from "react-p5/node_modules/@types/p5";
 import type { JSX } from "preact";
 import { useRef } from "preact/hooks";
 import Sketch from "react-p5";
+import cx from "./cx";
 import {
 	dropOut,
 	dropOutRandom,
@@ -11,23 +12,24 @@ import {
 } from "./util/points";
 import { createDrawingFunctions } from "./util/drawFns";
 import { matchToSize } from "./util";
-import { getStateValues, inputs } from "./inputs";
-import ControlPanel from "./ControlPanel";
+import { getStateValues, initialState } from "./inputs";
+import ControlPanel from "./components/ControlPanel";
 import style from "./App.module.scss";
 
 function App(): JSX.Element {
 	const captureRef = useRef<p5.Element | null>(null);
-	const isLoopingRef = useRef(false);
+	const isLoopingRef = useRef(true);
 	const imgRef = useRef<p5.Image | null>(null);
 	const p5Ref = useRef<p5 | null>(null);
-	const stateRef = useRef(inputs);
+	const stateRef = useRef(initialState);
 	const seed = 72;
 
 	const setup = (p: p5, canvasParentRef: Element) => {
 		p5Ref.current = p;
-		p.createCanvas(400, 400).parent(canvasParentRef);
+		p.createCanvas(window.innerWidth, window.innerHeight).parent(
+			canvasParentRef,
+		);
 		p.randomSeed(seed);
-		p.noLoop();
 		p.background(0);
 		// Init cam
 		const cam = p.createCapture(p.VIDEO, () => {
@@ -65,8 +67,11 @@ function App(): JSX.Element {
 		} = getStateValues(stateRef.current);
 
 		if (!img) return;
-		const maxDim = Math.max(img.width, img.height);
-		const maxSize = window.innerHeight;
+		const imgAspect = img.width / img.height;
+		const screenAspect = window.innerWidth / window.innerHeight;
+		const isImgWider = imgAspect > screenAspect;
+		const maxDim = isImgWider ? img.width : img.height;
+		const maxSize = isImgWider ? window.innerWidth : window.innerHeight;
 		const scale = maxSize / maxDim;
 		const desiredWidth = Math.round(img.width * scale);
 		const desiredHeight = Math.round(img.height * scale);
@@ -117,50 +122,28 @@ function App(): JSX.Element {
 		drawingFn?.(sorted);
 	};
 
-	const handleClick = () => {
-		const {
-			edgeDetectionWidth: w,
-			edgeDetectionBitDepth: bd,
-			maxDist: d,
-			dropOutPercentage: pc,
-			bgAlpha: ba,
-			colAlpha: ca,
-			strokeWeight: s,
-			drawingFnName: fn,
-			randomDropout: r,
-		} = getStateValues(stateRef.current);
-		const hash = [
-			w,
-			bd,
-			d,
-			pc.toString().replace(".", ""),
-			ba,
-			ca,
-			s,
-			Number(r),
-			fn,
-		].join("-");
-		p5Ref.current?.saveCanvas(`sketch__${hash}.png`);
+	const handleResize = () => {
+		if (!isLoopingRef.current) {
+			p5Ref.current?.redraw();
+		}
 	};
 
 	return (
-		<>
-			<main>
-				<h1>hello</h1>
-				<div onClick={handleClick}>
-					<Sketch
-						className={style.canvas}
-						setup={setup}
-						draw={draw}
-					/>
-				</div>
-				<ControlPanel
-					isLoopingRef={isLoopingRef}
-					p5Ref={p5Ref}
-					stateRef={stateRef}
+		<main className={cx(style.pageWrapper)}>
+			<div>
+				<Sketch
+					className={style.canvasWrapper}
+					setup={setup}
+					draw={draw}
+					windowResized={handleResize}
 				/>
-			</main>
-		</>
+			</div>
+			<ControlPanel
+				isLoopingRef={isLoopingRef}
+				p5Ref={p5Ref}
+				stateRef={stateRef}
+			/>
+		</main>
 	);
 }
 

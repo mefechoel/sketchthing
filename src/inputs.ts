@@ -24,7 +24,25 @@ export type InputState<Type extends InputType> = Type extends InputType.Slider
 	? SelectState
 	: never;
 
-export const inputs = {
+export type SliderName =
+	| "edgeDetectionWidth"
+	| "edgeDetectionBitDepth"
+	| "maxDist"
+	| "dropOutPercentage"
+	| "bgAlpha"
+	| "colAlpha"
+	| "strokeWeight";
+export type SelectName = "drawingMode" | "dropoutMode" | "colorMode";
+export type InputName = SliderName | SelectName;
+export type InputDefinitions = {
+	[K in InputName]: K extends SliderName
+		? InputState<InputType.Slider>
+		: K extends SelectName
+		? InputState<InputType.Select>
+		: never;
+};
+
+export const inputs: InputDefinitions = {
 	edgeDetectionWidth: {
 		label: "Input resolution",
 		min: 20,
@@ -101,8 +119,18 @@ export const inputs = {
 	},
 };
 
-export type State = typeof inputs;
-export type InputName = keyof State;
+export type State = {
+	[K in InputName]: K extends SliderName
+		? number
+		: K extends SelectName
+		? string
+		: never;
+};
+
+export const initialState = Object.fromEntries(
+	Object.entries(inputs).map(([key, def]) => [key, def.value]),
+) as State;
+
 export type InputItem<Type extends InputType> = InputState<Type> & {
 	name: InputName;
 };
@@ -125,15 +153,41 @@ const defaultColorMode: ColorMode = { bg: 0, stroke: 255 };
 
 export function getStateValues(state: State) {
 	return {
-		edgeDetectionWidth: state.edgeDetectionWidth.value,
-		edgeDetectionBitDepth: state.edgeDetectionBitDepth.value,
-		maxDist: state.maxDist.value,
-		dropOutPercentage: state.dropOutPercentage.value,
-		bgAlpha: state.bgAlpha.value,
-		colAlpha: state.colAlpha.value,
-		strokeWeight: state.strokeWeight.value,
-		drawingFnName: state.drawingMode.value,
-		randomDropout: state.dropoutMode.value === "random",
-		colors: colorModes[state.colorMode.value] || defaultColorMode,
+		edgeDetectionWidth: state.edgeDetectionWidth,
+		edgeDetectionBitDepth: state.edgeDetectionBitDepth,
+		maxDist: state.maxDist,
+		dropOutPercentage: state.dropOutPercentage,
+		bgAlpha: state.bgAlpha,
+		colAlpha: state.colAlpha,
+		strokeWeight: state.strokeWeight,
+		drawingFnName: state.drawingMode,
+		randomDropout: state.dropoutMode === "random",
+		colors: colorModes[state.colorMode] || defaultColorMode,
 	};
+}
+
+export function createStateHash(state: State) {
+	const {
+		edgeDetectionWidth: w,
+		edgeDetectionBitDepth: bd,
+		maxDist: d,
+		dropOutPercentage: pc,
+		bgAlpha: ba,
+		colAlpha: ca,
+		strokeWeight: s,
+		drawingFnName: fn,
+		randomDropout: r,
+	} = getStateValues(state);
+	const hash = [
+		w,
+		bd,
+		d,
+		pc.toString().replace(".", ""),
+		ba,
+		ca,
+		s,
+		Number(r),
+		fn,
+	].join("-");
+	return hash;
 }

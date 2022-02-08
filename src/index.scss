@@ -1,23 +1,23 @@
 @use "./styles/reset.scss";
 @use "./styles/theme.scss";
 @use "./styles/typography.scss";
-@use "./styles/transitions.scss";
+// @use "./styles/transitions.scss";
 
 body {
 	color: var(--fontCol);
-	background-color: var(--bgCol);
+	// background-color: var(--bgCol);
 	min-height: 100vh;
 }
 
-*,
-*::before,
-*::after {
-	transition: transitions.$defaultTransition;
+// *,
+// *::before,
+// *::after {
+// 	transition: transitions.$defaultTransition;
 
-	@include transitions.whenBlocked {
-		transition: none;
-	}
-}
+// 	@include transitions.whenBlocked {
+// 		transition: none;
+// 	}
+// }
 
 @mixin focusStyles {
 	outline: 0.2rem solid var(--accentCol);

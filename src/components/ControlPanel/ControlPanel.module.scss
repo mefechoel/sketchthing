@@ -1,0 +1,53 @@
+.buttonGroup {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+}
+
+.panel {
+	position: fixed;
+	top: 0;
+	right: 0;
+}
+
+:global input[type="range"] {
+	--track-height: 0.5em;
+	--thumb-height: 1.5em;
+	--thumb-width: 1.5em;
+
+	-webkit-appearance: none;
+	background: transparent;
+	display: block;
+	height: var(--thumb-height);
+
+	&::-webkit-slider-runnable-track,
+	&::-moz-range-track {
+		background: #fff;
+		height: var(--track-height);
+		border: none;
+		border-radius: 0;
+	}
+
+	&::-webkit-slider-thumb {
+		-webkit-appearance: none;
+	}
+	&::-webkit-slider-thumb,
+	&::-moz-range-thumb {
+		height: var(--thumb-height);
+		width: var(--thumb-width);
+		background: white;
+		// filter: #{invert(1)};
+		margin-top: calc(-1 * var(--track-height));
+		border: none;
+		border-radius: 0;
+		border-radius: 50%;
+		position: relative;
+
+		// &::after {
+		// 	content: "";
+		// 	position: absolute;
+		// 	inset: 0;
+		// 	background-image: url("./alien.png");
+		// }
+	}
+}

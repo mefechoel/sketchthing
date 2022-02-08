@@ -1,0 +1,30 @@
+.slider {
+	--thumb-size: 1em;
+	--track-size: 0.1em;
+	--color: white;
+	position: relative;
+	display: flex;
+	min-width: 6rem;
+	width: 100%;
+	width: 7rem;
+}
+
+.track {
+	position: relative;
+	width: 100%;
+	height: var(--track-size);
+	background: var(--color);
+	margin: calc((var(--thumb-size) - var(--track-size)) / 2) 0;
+	// overflow: hidden;
+}
+
+.thumb {
+	position: absolute;
+	top: 0;
+	left: calc((100% - var(--thumb-size)) * var(--position, 0));
+	width: var(--thumb-size);
+	height: var(--thumb-size);
+	background: var(--color);
+	// border-radius: 50%;
+	// overflow: hidden;
+}

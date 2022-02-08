@@ -1,0 +1,14 @@
+:global body {
+	overflow: hidden;
+}
+
+.pageWrapper {
+	position: relative;
+	background: black;
+}
+
+.canvasWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}

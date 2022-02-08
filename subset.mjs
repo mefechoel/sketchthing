@@ -18,10 +18,10 @@ const defaultConfig = {
 
 async function main() {
 	const config = {
+		...defaultConfig,
 		...JSON.parse(
 			await readFile(path.join(path.resolve(), "./subset.json"), "utf8"),
 		),
-		...defaultConfig,
 	};
 
 	const BASE_PATH = "./";
@@ -76,11 +76,13 @@ async function main() {
 		console.log(`Subsetting file ${++i} of ${files.length} complete`);
 	});
 
-	Promise.all(promises)
-		// eslint-disable-next-line no-console
-		.then(() => console.log("Done!"))
-		// eslint-disable-next-line no-console
-		.catch((err) => console.error(err));
+	return (
+		Promise.all(promises)
+			// eslint-disable-next-line no-console
+			.then(() => console.log("Done!"))
+			// eslint-disable-next-line no-console
+			.catch((err) => console.error(err))
+	);
 }
 
 main();
