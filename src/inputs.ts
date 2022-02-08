@@ -69,7 +69,7 @@ export const inputs: InputDefinitions = {
 	},
 	dropOutPercentage: {
 		label: "Output resolution",
-		min: 0.001,
+		min: 0,
 		max: 1,
 		value: 0.6,
 		step: 0.01,

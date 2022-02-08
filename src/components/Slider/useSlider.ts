@@ -4,7 +4,9 @@ import type { JSX } from "preact";
 import { useSyncedRef } from "../../util/hooks";
 import { clamp, normalizeRangePosition, round } from "../../util/math";
 
-export interface UseSliderOptions {
+export interface UseSliderOptions<
+	ElementType extends HTMLElement = HTMLElement,
+> {
 	getThumbWidth: () => number;
 	min?: number;
 	max?: number;
@@ -12,10 +14,11 @@ export interface UseSliderOptions {
 	value?: number;
 	name?: string;
 	onChange?: (event: { value: number; name?: string }) => void;
+	sliderRef?: Ref<ElementType | null | undefined>;
 }
 
 function useSlider<ElementType extends HTMLElement = HTMLElement>(
-	options: UseSliderOptions,
+	options: UseSliderOptions<ElementType>,
 ) {
 	const {
 		min = 0,
@@ -34,7 +37,8 @@ function useSlider<ElementType extends HTMLElement = HTMLElement>(
 	const nameRef = useSyncedRef(name);
 	const getThumbWidthRef = useSyncedRef(getThumbWidth);
 	const position = round(normalizeRangePosition(value, min, max), 4);
-	const sliderRef = useRef<HTMLElement | null>();
+	const internalSliderRef = useRef<ElementType | null>();
+	const sliderRef = options.sliderRef || internalSliderRef;
 	const isMousePressedRef = useRef(false);
 
 	const handleChange = useCallback(
@@ -95,7 +99,7 @@ function useSlider<ElementType extends HTMLElement = HTMLElement>(
 			document.removeEventListener("mousedown", handleMouseDown);
 			document.removeEventListener("mouseup", handleMouseUp);
 		};
-	}, [getThumbWidthRef, handleChange, maxRef, minRef, stepRef]);
+	}, [getThumbWidthRef, handleChange, maxRef, minRef, sliderRef, stepRef]);
 
 	const slider = useMemo(() => {
 		const getProps = () => ({
@@ -118,7 +122,7 @@ function useSlider<ElementType extends HTMLElement = HTMLElement>(
 			position,
 			getProps,
 		};
-	}, [handleKeyDown, max, min, name, position, step, value]);
+	}, [handleKeyDown, max, min, name, position, sliderRef, step, value]);
 
 	return slider;
 }

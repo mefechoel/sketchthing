@@ -79,7 +79,7 @@ function ControlPanel({
 							<Fragment key={name}>
 								<br />
 								<label id={name}>
-									<div>{label}</div>
+									<div className={style.labelText}>{label}</div>
 									<ControlSlider
 										name={name as SliderName}
 										aria-labelledby={name}
@@ -98,7 +98,7 @@ function ControlPanel({
 						<Fragment key={name}>
 							<br />
 							<label htmlFor={name}>
-								<div>{label}</div>
+								<div className={style.labelText}>{label}</div>
 								<select
 									name={name}
 									id={name}
