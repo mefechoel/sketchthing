@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
 import url from "@rollup/plugin-url";
 import autoprefixer from "autoprefixer";
+import type { Plugin as PostCSSPlugin } from "postcss";
 import cssDeclarationSorter from "css-declaration-sorter";
 import banner from "./bundlerPlugins/banner";
 
@@ -48,8 +49,7 @@ export default defineConfig({
 		},
 		postcss: {
 			plugins: [
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				cssDeclarationSorter({ keepOverrides: true }) as any,
+				cssDeclarationSorter({ keepOverrides: true }) as PostCSSPlugin,
 				autoprefixer(),
 			],
 		},

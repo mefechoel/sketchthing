@@ -1,5 +1,5 @@
 import "./index.scss";
-import type p5 from "react-p5/node_modules/@types/p5";
+import type p5 from "p5";
 import type { JSX } from "preact";
 import { useRef } from "preact/hooks";
 import Sketch from "react-p5";

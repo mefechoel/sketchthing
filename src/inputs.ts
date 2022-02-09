@@ -5,6 +5,7 @@ export enum InputType {
 export interface BaseState {
 	label: string;
 	type: InputType;
+	hide?: boolean;
 }
 export interface SliderState extends BaseState {
 	min: number;
@@ -116,6 +117,7 @@ export const inputs: InputDefinitions = {
 		options: ["black and white", "white and black"],
 		value: "black and white",
 		type: InputType.Select,
+		hide: true,
 	},
 };
 

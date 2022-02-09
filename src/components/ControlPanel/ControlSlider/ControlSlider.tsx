@@ -1,11 +1,9 @@
 import { useRef, useLayoutEffect } from "preact/hooks";
-import type p5 from "react-p5/node_modules/@types/p5";
+import type p5 from "p5";
 import Sketch from "react-p5";
 import type { SliderName } from "../../../inputs";
-import { inputs } from "../../../inputs";
 import type { ExtendProps } from "../../../util/types";
 import type { SliderProps } from "../../Slider";
-import Slider from "../../Slider";
 import visuals from "./visuals";
 import style from "./ControlSlider.module.scss";
 import cx from "../../../cx";
@@ -22,10 +20,6 @@ function ControlSlider(props: ControlSliderProps) {
 		onChange,
 		name,
 		className,
-		trackClassName,
-		thumbClassName,
-		track = null,
-		thumb = null,
 		...restProps
 	} = props;
 	const sliderRef = useRef<HTMLDivElement | null>();
@@ -41,12 +35,10 @@ function ControlSlider(props: ControlSliderProps) {
 		sliderRef,
 	});
 
-	// const thumbP5Ref = useRef<p5 | null>(null);
 	const p5Ref = useRef<p5 | null>(null);
 
 	useLayoutEffect(() => {
 		p5Ref.current?.redraw();
-		// thumbP5Ref.current?.redraw();
 	}, [props.value]);
 
 	return (
@@ -67,47 +59,12 @@ function ControlSlider(props: ControlSliderProps) {
 					if (p.width !== width || p.height !== height) {
 						p.resizeCanvas(width, height);
 					}
-					const { max, min } = inputs[props.name];
-					const position = ((props.value as number) - min) / (max - min);
+					// const { max, min } = inputs[props.name];
+					// const position = ((props.value as number) - min) / (max - min);
 					visuals[props.name]?.draw(p, position);
 				}}
 			/>
 		</div>
-		// <Slider
-		// 	{...props}
-		// 	trackClassName={cx(style.track, props.trackClassName)}
-		// 	thumbClassName={cx(style.thumb, props.thumbClassName)}
-		// 	// track={
-		// 	// 	<Sketch
-		// 	// 		setup={(p, canvasParentRef) => {
-		// 	// 			p.createCanvas(18, 18).parent(canvasParentRef);
-		// 	// 			p.background(255);
-		// 	// 			p.noLoop();
-		// 	// 			trackP5Ref.current = p;
-		// 	// 		}}
-		// 	// 		draw={(p) => {
-		// 	// 			const { max, min } = inputs[props.name];
-		// 	// 			const position = ((props.value as number) - min) / (max - min);
-		// 	// 			visuals[props.name]?.track?.draw(p, position);
-		// 	// 		}}
-		// 	// 	/>
-		// 	// }
-		// 	thumb={
-		// 		<Sketch
-		// 			setup={(p, canvasParentRef) => {
-		// 				p.createCanvas(18, 18).parent(canvasParentRef);
-		// 				p.background(255);
-		// 				p.noLoop();
-		// 				thumbP5Ref.current = p;
-		// 			}}
-		// 			draw={(p) => {
-		// 				const { max, min } = inputs[props.name];
-		// 				const position = ((props.value as number) - min) / (max - min);
-		// 				visuals[props.name]?.thumb?.draw(p, position);
-		// 			}}
-		// 		/>
-		// 	}
-		// />
 	);
 }
 

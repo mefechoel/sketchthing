@@ -1,4 +1,4 @@
-import type p5 from "react-p5/node_modules/@types/p5";
+import type p5 from "p5";
 import type { InputDefinitions } from "../../../inputs";
 import { createDrawingFunctions } from "../../../util/drawFns";
 import type { Point } from "../../../util/types";

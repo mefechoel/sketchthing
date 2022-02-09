@@ -1,4 +1,4 @@
-import type p5 from "react-p5/node_modules/@types/p5";
+import type p5 from "p5";
 import { sqDist } from "./points";
 import type { Point } from "./types";
 

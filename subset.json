@@ -1,6 +1,0 @@
-{
-	"inDir": "./pageFonts",
-	"outDir": "./src/fonts/subset",
-	"charSet": "ÄÖÜäöüẞß€–‚‘’ʼ„“”~!@#$%^&*()_+{}|:\"<>?`-=[]\\;',./ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-	"fontFeatures": ["kern", "liga", "ss01", "ss03"]
-}

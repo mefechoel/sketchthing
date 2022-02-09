@@ -1,7 +1,7 @@
-import type { Ref, StateUpdater } from "preact/hooks";
+import type { StateUpdater } from "preact/hooks";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-export function useSyncedRef<T>(value: T): Ref<T> {
+export function useSyncedRef<T>(value: T): { current: T } {
 	const ref = useRef(value);
 	useEffect(() => {
 		ref.current = value;

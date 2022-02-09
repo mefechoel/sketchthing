@@ -1,7 +1,7 @@
-import type p5 from "react-p5/node_modules/@types/p5";
+import type p5 from "p5";
 import { Fragment } from "preact";
 import type { JSX } from "preact";
-import type { Ref } from "preact/hooks";
+import type { Ref, MutableRef } from "preact/hooks";
 import { useEffect, useState } from "preact/hooks";
 import type { SelectName, SliderName, State } from "../../inputs";
 import {
@@ -19,8 +19,8 @@ function ControlPanel({
 	stateRef,
 }: {
 	p5Ref: Ref<p5 | null>;
-	isLoopingRef: Ref<boolean>;
-	stateRef: Ref<State>;
+	isLoopingRef: MutableRef<boolean>;
+	stateRef: MutableRef<State>;
 }): JSX.Element {
 	const [state, setState] = useState(initialState);
 	useEffect(() => {
@@ -71,48 +71,50 @@ function ControlPanel({
 				<button onClick={handleSave}>save</button>
 			</div>
 			<div className={style.panel}>
-				{inputList.map((item) => {
-					const { label, name, type } = item;
-					if (type === InputType.Slider) {
-						const { max, min, step } = item;
+				{inputList
+					.filter((item) => !item.hide)
+					.map((item) => {
+						const { label, name, type } = item;
+						if (type === InputType.Slider) {
+							const { max, min, step } = item;
+							return (
+								<Fragment key={name}>
+									<br />
+									<label id={name}>
+										<div className={style.labelText}>{label}</div>
+										<ControlSlider
+											name={name as SliderName}
+											aria-labelledby={name}
+											max={max}
+											min={min}
+											step={step}
+											value={state[name] as number}
+											onChange={handleSliderChange}
+										/>
+									</label>
+								</Fragment>
+							);
+						}
+						const { options } = item;
 						return (
 							<Fragment key={name}>
 								<br />
-								<label id={name}>
+								<label htmlFor={name}>
 									<div className={style.labelText}>{label}</div>
-									<ControlSlider
-										name={name as SliderName}
-										aria-labelledby={name}
-										max={max}
-										min={min}
-										step={step}
-										value={state[name] as number}
-										onChange={handleSliderChange}
-									/>
+									<select
+										name={name}
+										id={name}
+										value={state[name]}
+										onChange={handleSelectChange}
+									>
+										{options.map((option) => (
+											<option key={option}>{option}</option>
+										))}
+									</select>
 								</label>
 							</Fragment>
 						);
-					}
-					const { options } = item;
-					return (
-						<Fragment key={name}>
-							<br />
-							<label htmlFor={name}>
-								<div className={style.labelText}>{label}</div>
-								<select
-									name={name}
-									id={name}
-									value={state[name]}
-									onChange={handleSelectChange}
-								>
-									{options.map((option) => (
-										<option key={option}>{option}</option>
-									))}
-								</select>
-							</label>
-						</Fragment>
-					);
-				})}
+					})}
 			</div>
 		</div>
 	);
