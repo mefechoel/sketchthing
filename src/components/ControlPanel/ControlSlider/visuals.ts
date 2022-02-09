@@ -26,17 +26,20 @@ type Visuals = {
 	[K in keyof InputDefinitions]: VisualSketch;
 };
 
+const col: [number, number, number] = [20, 60, 240];
+
 const visuals: Partial<Visuals> = {
 	edgeDetectionWidth: {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 			p.rotate(p.PI / 4);
-			p.background(0, 0, 180);
+			p.background(...col);
 
 			const minSteps = 4;
 			const maxSteps = 9;
 			const steps = minSteps + Math.round((maxSteps - minSteps) * position);
-			const r = p.height / 2;
+			const strokeWeight = 2;
+			const r = (p.height - strokeWeight) / 2;
 			const points: Point[] = [];
 			for (let i = 0; i <= steps; i++) {
 				const angle = (i / steps) * p.TWO_PI;
@@ -46,7 +49,7 @@ const visuals: Partial<Visuals> = {
 			}
 			const d = createDrawingFunctions(p, 100);
 			p.stroke(255);
-			p.strokeWeight(2);
+			p.strokeWeight(strokeWeight);
 			d.drawLines(points);
 		},
 	},
@@ -54,7 +57,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPosition(p, position);
 
-			p.background(0, 0, 180);
+			p.background(...col);
 			p.stroke(255);
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
@@ -83,7 +86,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 
-			p.background(0, 0, 180, Math.max(20, 255 * position ** 2.5));
+			p.background(...col, Math.max(20, 255 * position ** 2.5));
 			p.stroke(255);
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
@@ -96,7 +99,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 
-			p.background(0, 0, 180);
+			p.background(...col);
 			p.stroke(255, Math.max(40, 255 * position));
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
@@ -108,7 +111,7 @@ const visuals: Partial<Visuals> = {
 	strokeWeight: {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
-			p.background(0, 0, 180);
+			p.background(...col);
 
 			const minWeight = 1;
 			const maxWeight = p.height / 2;
@@ -124,7 +127,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPosition(p, position);
 
-			p.background(0, 0, 180);
+			p.background(...col);
 			p.stroke(255);
 			p.noStroke();
 
@@ -139,7 +142,11 @@ const visuals: Partial<Visuals> = {
 				for (let x = 0; x < segments; x++) {
 					const segmentXPercentage = x / segments;
 					const offsetX = p.height * segmentXPercentage;
-					p.fill(p.random(255));
+					const diagonal = ((x + y) % segments) + 1;
+					const d = Math.abs(diagonal - segments * 0.5);
+					const r = d / (segments * 0.5);
+					const alpha = r * 255;
+					p.fill(255, alpha);
 					p.rect(offsetX, offsetY, size, size);
 				}
 			}
@@ -149,7 +156,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 
-			p.background(0, 0, 180);
+			p.background(...col);
 			p.stroke(255);
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
