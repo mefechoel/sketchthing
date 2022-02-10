@@ -3,7 +3,7 @@ import { Fragment } from "preact";
 import type { JSX } from "preact";
 import type { Ref, MutableRef } from "preact/hooks";
 import { useEffect, useState } from "preact/hooks";
-import type { SelectName, SliderName, State } from "../../inputs";
+import type { InputName, SelectName, SliderName, State } from "../../inputs";
 import {
 	createStateHash,
 	inputList,
@@ -11,6 +11,7 @@ import {
 	InputType,
 } from "../../inputs";
 import ControlSlider from "./ControlSlider";
+import ControlSelect from "./ControlSelect";
 import style from "./ControlPanel.module.scss";
 
 function ControlPanel({
@@ -42,20 +43,12 @@ function ControlPanel({
 		}
 	};
 
-	const handleSliderChange = (event: { value: number; name?: string }) => {
-		const { name, value } = event as {
-			name: SliderName;
-			value: number;
-		};
-		setState((prevState) => ({ ...prevState, [name]: value }));
-	};
-	const handleSelectChange: JSX.GenericEventHandler<HTMLSelectElement> = (
-		e,
-	) => {
-		const { name, value } = e.target as EventTarget & {
-			name: SelectName;
-			value: string;
-		};
+	const handleChange = (event: {
+		value: number | string;
+		name?: InputName;
+	}) => {
+		const { name, value } = event;
+		if (!name) return;
 		setState((prevState) => ({ ...prevState, [name]: value }));
 	};
 
@@ -89,7 +82,7 @@ function ControlPanel({
 											min={min}
 											step={step}
 											value={state[name] as number}
-											onChange={handleSliderChange}
+											onChange={handleChange}
 										/>
 									</label>
 								</Fragment>
@@ -99,19 +92,13 @@ function ControlPanel({
 						return (
 							<Fragment key={name}>
 								<br />
-								<label htmlFor={name}>
-									<div className={style.labelText}>{label}</div>
-									<select
-										name={name}
-										id={name}
-										value={state[name]}
-										onChange={handleSelectChange}
-									>
-										{options.map((option) => (
-											<option key={option}>{option}</option>
-										))}
-									</select>
-								</label>
+								<ControlSelect
+									label={label}
+									name={name as SelectName}
+									options={options}
+									value={state[name] as string}
+									onChange={handleChange}
+								/>
 							</Fragment>
 						);
 					})}

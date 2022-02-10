@@ -1,17 +1,21 @@
-import { useRef, useLayoutEffect } from "preact/hooks";
-import type p5 from "p5";
-import Sketch from "react-p5";
+import { useRef } from "preact/hooks";
 import type { SliderName } from "../../../inputs";
 import type { ExtendProps } from "../../../util/types";
 import type { SliderProps } from "../../Slider";
 import visuals from "./visuals";
-import style from "./ControlSlider.module.scss";
 import cx from "../../../cx";
 import useSlider from "../../Slider/useSlider";
+import ControlSketch from "../ControlSketch/ControlSketch";
+import style from "./ControlSlider.module.scss";
 
-type ControlSliderProps = ExtendProps<{ name: SliderName }, SliderProps>;
+type ControlSliderProps<Name extends SliderName = SliderName> = ExtendProps<
+	{ name: Name; onChange?: (event: { value: number; name?: Name }) => void },
+	SliderProps
+>;
 
-function ControlSlider(props: ControlSliderProps) {
+function ControlSlider<Name extends SliderName = SliderName>(
+	props: ControlSliderProps<Name>,
+) {
 	const {
 		min = 0,
 		max = 1,
@@ -31,36 +35,16 @@ function ControlSlider(props: ControlSliderProps) {
 		step,
 		value,
 		name,
-		onChange,
+		onChange: onChange as (event: { value: number; name?: string }) => void,
 		sliderRef,
 	});
 
-	const p5Ref = useRef<p5 | null>(null);
-
-	useLayoutEffect(() => {
-		p5Ref.current?.redraw();
-	}, [props.value]);
-
 	return (
 		<div {...restProps} className={cx(style.slider, className)} {...getProps()}>
-			<Sketch
+			<ControlSketch
 				className={style.slider}
-				setup={(p, canvasParentRef) => {
-					const { width = 0, height = 0 } =
-						sliderRef.current?.getBoundingClientRect() || {};
-					p.createCanvas(width, height).parent(canvasParentRef);
-					p.background(0);
-					p.noLoop();
-					p5Ref.current = p;
-				}}
+				value={props.value}
 				draw={(p) => {
-					const { width = 0, height = 0 } =
-						sliderRef.current?.getBoundingClientRect() || {};
-					if (p.width !== width || p.height !== height) {
-						p.resizeCanvas(width, height);
-					}
-					// const { max, min } = inputs[props.name];
-					// const position = ((props.value as number) - min) / (max - min);
 					visuals[props.name]?.draw(p, position);
 				}}
 			/>

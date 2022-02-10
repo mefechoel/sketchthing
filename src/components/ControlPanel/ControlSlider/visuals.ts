@@ -1,39 +1,19 @@
-import type p5 from "p5";
-import type { InputDefinitions } from "../../../inputs";
+import type { SliderName } from "../../../inputs";
 import { createDrawingFunctions } from "../../../util/drawFns";
 import type { Point } from "../../../util/types";
+import {
+	themeColor,
+	translateToPosition,
+	translateToPositionCentered,
+} from "../visuals/helpers";
+import type { Visuals } from "../visuals/types";
 
-function getTranslationX(p: p5, position: number) {
-	const trackWidth = p.width;
-	const thumbSize = p.height;
-	return (trackWidth - thumbSize) * position;
-}
-function translateToPosition(p: p5, position: number) {
-	const x = getTranslationX(p, position);
-	p.translate(x, 0);
-}
-function translateToPositionCentered(p: p5, position: number) {
-	const halfThumbSize = p.height * 0.5;
-	const x = getTranslationX(p, position) + halfThumbSize;
-	p.translate(x, halfThumbSize);
-}
-
-interface VisualSketch {
-	draw: (p: p5, position: number) => void;
-}
-
-type Visuals = {
-	[K in keyof InputDefinitions]: VisualSketch;
-};
-
-const col: [number, number, number] = [20, 60, 240];
-
-const visuals: Partial<Visuals> = {
+const visuals: Partial<Visuals<SliderName>> = {
 	edgeDetectionWidth: {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 			p.rotate(p.PI / 4);
-			p.background(...col);
+			p.background(...themeColor);
 
 			const minSteps = 4;
 			const maxSteps = 9;
@@ -57,9 +37,10 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPosition(p, position);
 
-			p.background(...col);
+			p.background(...themeColor);
 			p.stroke(255);
 			const strokeWeight = 2;
+			const halfStrokeWeight = strokeWeight / 2;
 			p.strokeWeight(strokeWeight);
 
 			const minLines = 1;
@@ -70,12 +51,12 @@ const visuals: Partial<Visuals> = {
 				const segmentPercentage = lineI / (lines + 1);
 				const offset = p.height * segmentPercentage;
 				const x0 = offset;
-				const y0 = 0;
+				const y0 = halfStrokeWeight;
 				const x1 = offset;
-				const y1 = p.height;
-				const x2 = 0;
+				const y1 = p.height - halfStrokeWeight;
+				const x2 = halfStrokeWeight;
 				const y2 = offset;
-				const x3 = p.height;
+				const x3 = p.height - halfStrokeWeight;
 				const y3 = offset;
 				p.line(x0, y0, x1, y1);
 				p.line(x2, y2, x3, y3);
@@ -86,7 +67,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 
-			p.background(...col, Math.max(20, 255 * position ** 2.5));
+			p.background(...themeColor, Math.max(20, 255 * position ** 2.5));
 			p.stroke(255);
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
@@ -99,7 +80,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 
-			p.background(...col);
+			p.background(...themeColor);
 			p.stroke(255, Math.max(40, 255 * position));
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
@@ -111,7 +92,7 @@ const visuals: Partial<Visuals> = {
 	strokeWeight: {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
-			p.background(...col);
+			p.background(...themeColor);
 
 			const minWeight = 1;
 			const maxWeight = p.height / 2;
@@ -127,7 +108,7 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPosition(p, position);
 
-			p.background(...col);
+			p.background(...themeColor);
 			p.stroke(255);
 			p.noStroke();
 
@@ -156,13 +137,22 @@ const visuals: Partial<Visuals> = {
 		draw: (p, position) => {
 			translateToPositionCentered(p, position);
 
-			p.background(...col);
+			p.background(...themeColor);
 			p.stroke(255);
 			const strokeWeight = 2;
 			p.strokeWeight(strokeWeight);
 			p.noFill();
 
-			p.circle(0, 0, p.height - strokeWeight);
+			const diameter = p.height - strokeWeight;
+			const minArcLength = p.TWO_PI / 32;
+			const maxArcLength = p.TWO_PI / 4;
+			const quaterCircle = p.TWO_PI / 4;
+			const arcLength = minArcLength + (maxArcLength - minArcLength) * position;
+			for (let i = 0; i < 4; i++) {
+				const startArc = i * quaterCircle;
+				const endArc = startArc + arcLength;
+				p.arc(0, 0, diameter, diameter, startArc, endArc);
+			}
 		},
 	},
 };

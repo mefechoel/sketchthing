@@ -1,0 +1,20 @@
+@use "../../../styles/a11y.scss";
+
+.radio,
+.labelText,
+.legend,
+.label {
+	@include a11y.visuallyHidden;
+}
+
+.select {
+	border: none;
+	padding: 0;
+	margin: 0;
+}
+
+.sketch {
+	width: 8em;
+	height: 1.5em;
+	cursor: pointer;
+}
