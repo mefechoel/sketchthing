@@ -2,8 +2,6 @@ import type { JSX } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
 import type p5 from "p5";
 import Sketch from "react-p5";
-import cx from "../../../cx";
-import style from "./ControlSketch.module.scss";
 
 function ControlSketch(props: {
 	className?: string;
@@ -19,7 +17,7 @@ function ControlSketch(props: {
 
 	return (
 		<Sketch
-			className={cx(style.sketch, props.className)}
+			className={props.className}
 			setup={(p, canvasParentRef) => {
 				wrapperRef.current = canvasParentRef as HTMLDivElement;
 				const { width = 0, height = 0 } =

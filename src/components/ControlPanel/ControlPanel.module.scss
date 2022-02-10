@@ -1,5 +1,8 @@
 @use "../../styles/a11y.scss";
 
+$themeColor: rgb(20, 90, 200);
+$highlightColor: rgb(160, 30, 100);
+
 .buttonGroup {
 	position: fixed;
 	bottom: 0;
@@ -8,10 +11,45 @@
 
 .panel {
 	position: fixed;
-	bottom: 3em;
+	bottom: 6rem;
 	right: 0;
+	opacity: 0;
+	pointer-events: none;
+
+	&.isOpen {
+		opacity: 1;
+		pointer-events: auto;
+	}
 }
 
-.labelText {
+.button {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	border: none;
+	background: $themeColor;
+	width: 2rem;
+	height: 2rem;
+	margin: 0;
+	margin-bottom: 2rem;
+	margin-left: 0.125rem;
+	padding: 0;
+	color: white;
+	cursor: pointer;
+	transition: background-color 150ms ease;
+
+	&:focus-visible,
+	&:hover {
+		background: $highlightColor;
+	}
+
+	svg {
+		width: 1.6rem;
+		height: 1.6rem;
+	}
+}
+
+.labelText,
+.buttonLabel {
 	@include a11y.visuallyHidden;
 }
