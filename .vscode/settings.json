@@ -39,6 +39,9 @@
       "source.fixAll.eslint": true
     }
   },
+  "[markdown]": {
+    "editor.formatOnSave": true,
+  },
   "[rust]": {
     "editor.formatOnSave": true,
   },
@@ -51,12 +54,5 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": false
   },
-  "files.eol": "\n",
-  "spellright.documentTypes": [
-    "markdown",
-    "latex"
-  ],
-  "spellright.language": [
-    "en"
-  ]
+  "files.eol": "\n"
 }

@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
+    "preview": "vite preview",
     "lint": "eslint .",
     "check-ts": "tsc --noEmit",
     "check": "npm run lint && npm run check-ts",
