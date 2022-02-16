@@ -9,11 +9,10 @@
     "build:spa": "npm run check-ts && npm run build:spa:nocheck",
     "build:packages": "npm run check-ts && npm run build:spa:nocheck",
     "copy-licenses": "node scripts/copyLicenses.js",
-    "build": "npm run build:spa:nocheck && npm run copy-licenses",
+    "build": "npm run build:spa && npm run copy-licenses",
     "serve": "vite preview"
   },
   "dependencies": {
-    "@svelte-navigator/history": "^0.4.0",
     "@types/react": "^17.0.39",
     "classnames": "^2.3.1",
     "preact": "^10.6.5",
