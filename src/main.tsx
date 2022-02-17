@@ -1,8 +1,8 @@
-import { hydrate } from "preact";
+import { render } from "preact";
 import App from "./App";
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-hydrate(<App />, document.getElementById("root")!);
+render(<App />, document.getElementById("root")!);
 
 setTimeout(() => {
 	// eslint-disable-next-line no-console

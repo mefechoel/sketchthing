@@ -47,13 +47,18 @@ export function throttle<Fn extends (...args: any[]) => any>(
 	return throttled;
 }
 
-export function bench(fn: () => void, label = "", log = false) {
+export function bench(
+	fn: () => void,
+	{ label = "", log = true, iterations = 1 } = {},
+) {
 	if (log) {
 		// eslint-disable-next-line no-console
 		console.log(label, "start");
 	}
 	const start = performance.now();
-	fn();
+	for (let i = 0; i < iterations; i++) {
+		fn();
+	}
 	if (log) {
 		// eslint-disable-next-line no-console
 		console.log(label, "took ", performance.now() - start, "ms");

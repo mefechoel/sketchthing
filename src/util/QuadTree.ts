@@ -186,12 +186,15 @@ export class QuadTree {
 			this.subdivide();
 		}
 
-		const wasInserted = !!(
-			this.northeast?.insert(point) ||
-			this.northwest?.insert(point) ||
-			this.southeast?.insert(point) ||
-			this.southwest?.insert(point)
-		);
+		const wasInserted =
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.northeast!.insert(point) ||
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.northwest!.insert(point) ||
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.southeast!.insert(point) ||
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.southwest!.insert(point);
 		this.size += wasInserted as unknown as number;
 		return wasInserted;
 	}
@@ -208,12 +211,16 @@ export class QuadTree {
 			return true;
 		}
 
-		const wasRemoved = !!(
-			this.northeast?.remove(point) ||
-			this.northwest?.remove(point) ||
-			this.southeast?.remove(point) ||
-			this.southwest?.remove(point)
-		);
+		if (!this.divided) return false;
+		const wasRemoved =
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.northeast!.remove(point) ||
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.northwest!.remove(point) ||
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.southeast!.remove(point) ||
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.southwest!.remove(point);
 		this.size -= wasRemoved as unknown as number;
 		return wasRemoved;
 	}
@@ -228,10 +235,16 @@ export class QuadTree {
 				found.push(p);
 			}
 		}
-		this.northwest?.query(range, found);
-		this.northeast?.query(range, found);
-		this.southwest?.query(range, found);
-		this.southeast?.query(range, found);
+		if (this.divided) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.northwest!.query(range, found);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.northeast!.query(range, found);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.southwest!.query(range, found);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			this.southeast!.query(range, found);
+		}
 
 		return found;
 	}
