@@ -4,12 +4,12 @@ import type { JSX } from "preact";
 import { useRef } from "preact/hooks";
 import Sketch from "react-p5";
 import cx from "./cx";
-import { createDrawingFunctions } from "./util/drawFns";
+import { createDrawingFunctions } from "./utilbit/drawFns";
 import { getStateValues, initialState } from "./inputs";
 import ControlPanel from "./components/ControlPanel";
-import createTransformImageToPoints, {
+import createTransformImageToPointsBit, {
 	fitDimensions,
-} from "./util/transformImageToPoints";
+} from "./utilbit/transformImageToPoints";
 import style from "./App.module.scss";
 
 function App(): JSX.Element {
@@ -17,8 +17,8 @@ function App(): JSX.Element {
 	const isLoopingRef = useRef(true);
 	const imgRef = useRef<p5.Image | null>(null);
 	const p5Ref = useRef<p5 | null>(null);
-	const transformRef =
-		useRef<ReturnType<typeof createTransformImageToPoints>>();
+	const transformBitRef =
+		useRef<ReturnType<typeof createTransformImageToPointsBit>>();
 	const stateRef = useRef(initialState);
 	const seed = 72;
 
@@ -28,7 +28,9 @@ function App(): JSX.Element {
 			canvasParentRef,
 		);
 		p.randomSeed(seed);
-		transformRef.current = createTransformImageToPoints(() => p.random(1));
+		transformBitRef.current = createTransformImageToPointsBit(() =>
+			p.random(1),
+		);
 		p.background(0);
 		// Init cam
 		const cam = p.createCapture(p.VIDEO, () => {
@@ -80,19 +82,19 @@ function App(): JSX.Element {
 			p.randomSeed(seed);
 		}
 
-		const drawingFns = createDrawingFunctions(p, maxDist);
-		const drawingFn = {
-			points: drawingFns.drawPoints,
-			curve: drawingFns.drawCurve,
-			pipes: drawingFns.drawPipes,
-			lines: drawingFns.drawLines,
+		const drawingFnsBit = createDrawingFunctions(p, maxDist);
+		const drawingFnBit = {
+			points: drawingFnsBit.drawPoints,
+			curve: drawingFnsBit.drawCurve,
+			pipes: drawingFnsBit.drawPipes,
+			lines: drawingFnsBit.drawLines,
 		}[drawingFnName];
 
 		img.resize(edgeDetectionWidth, 0);
 		img.loadPixels();
 
 		const { width: imgWidth, pixels: imgPixels } = img;
-		const points = transformRef.current?.({
+		const bitpoints = transformBitRef.current?.({
 			edgeDetectionBitDepth,
 			dropOutPercentage,
 			randomDropout,
@@ -109,7 +111,8 @@ function App(): JSX.Element {
 		p.background(colors.bg, bgAlpha);
 		p.stroke(colors.stroke, colAlpha);
 		p.strokeWeight(strokeWeight);
-		drawingFn?.(points || []);
+
+		drawingFnBit?.(bitpoints || []);
 	};
 
 	const handleResize = () => {

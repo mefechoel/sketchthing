@@ -1,7 +1,14 @@
 import type p5 from "p5";
 import { useState } from "preact/hooks";
-import { dropOut, extractEdgePoints, sortByDistance2d } from "./points";
-import type { Point } from "./types";
+import {
+	createBitPoint,
+	dropOut,
+	extractEdgePoints,
+	getX,
+	getY,
+	sortByDistance2d,
+} from "./points";
+import type { BitPoint, ListLike } from "./types";
 
 let idCounter = 0;
 export const createId = (label: string) => `${label}--${idCounter++}`;
@@ -51,45 +58,22 @@ export function bench(
 	fn: () => void,
 	{ label = "", log = true, iterations = 1 } = {},
 ) {
-	// if (log) {
-	// 	// eslint-disable-next-line no-console
-	// 	console.log(label, "start");
-	// }
-	const stamps = [];
+	if (log) {
+		// eslint-disable-next-line no-console
+		console.log(label, "start");
+	}
 	const start = performance.now();
 	for (let i = 0; i < iterations; i++) {
-		const startInner = performance.now();
 		fn();
-		stamps.push(performance.now() - startInner);
 	}
 	if (log) {
-		const median = stamps.sort((a, b) => a - b)[Math.floor(stamps.length / 2)];
 		// eslint-disable-next-line no-console
-		console.log(label, "took ", performance.now() - start, "ms. MED:", median);
+		console.log(label, "took ", performance.now() - start, "ms");
 	}
-}
-
-export function downloadString(
-	text: string,
-	fileType: string,
-	fileName: string,
-) {
-	const blob = new Blob([text], { type: fileType });
-	const a = document.createElement("a");
-	a.download = fileName;
-	a.href = URL.createObjectURL(blob);
-	a.dataset.downloadurl = [fileType, a.download, a.href].join(":");
-	a.style.display = "none";
-	document.body.appendChild(a);
-	a.click();
-	document.body.removeChild(a);
-	setTimeout(function () {
-		URL.revokeObjectURL(a.href);
-	}, 1500);
 }
 
 export function matchToSize(
-	list: Point[],
+	list: ListLike<BitPoint>,
 	{
 		sourceWidth,
 		sourceHeight,
@@ -101,13 +85,27 @@ export function matchToSize(
 		targetWidth: number;
 		targetHeight: number;
 	},
-): Point[] {
+): BitPoint[] {
 	const widthScale = targetWidth / sourceWidth;
 	const heightScale = targetHeight / sourceHeight;
-	return list.map(({ x, y }) => ({
-		x: x * widthScale,
-		y: y * heightScale,
-	}));
+	const out = new Array(list.length);
+	for (let i = 0; i < list.length; i++) {
+		const point = list[i];
+		const x = getX(point);
+		const y = getY(point);
+		const nextX = Math.floor(x * widthScale);
+		const nextY = Math.floor(y * heightScale);
+		const matchedPoint = createBitPoint(nextX, nextY);
+		out[i] = matchedPoint;
+	}
+	return out;
+	// return list.map((point) => {
+	// 	const x = getX(point);
+	// 	const y = getY(point);
+	// 	const nextX = Math.floor(x * widthScale);
+	// 	const nextY = Math.floor(y * heightScale);
+	// 	return createBitPoint(nextX, nextY);
+	// });
 }
 
 export function createPointsFromColorChannel(
