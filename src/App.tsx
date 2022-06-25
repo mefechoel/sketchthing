@@ -15,6 +15,7 @@ import style from "./App.module.scss";
 function App(): JSX.Element {
 	const captureRef = useRef<p5.Element | null>(null);
 	const isLoopingRef = useRef(true);
+	const frameRateDisplayRef = useRef<HTMLDivElement>(null);
 	const imgRef = useRef<p5.Image | null>(null);
 	const p5Ref = useRef<p5 | null>(null);
 	const transformBitRef =
@@ -28,8 +29,10 @@ function App(): JSX.Element {
 			canvasParentRef,
 		);
 		p.randomSeed(seed);
-		transformBitRef.current = createTransformImageToPointsBit(() =>
-			p.random(1),
+		transformBitRef.current = createTransformImageToPointsBit(
+			p,
+			() => p.random(1),
+			frameRateDisplayRef,
 		);
 		p.background(0);
 		// Init cam
@@ -123,6 +126,7 @@ function App(): JSX.Element {
 
 	return (
 		<main className={cx(style.pageWrapper)}>
+			<div ref={frameRateDisplayRef} className={style.frameRate}></div>
 			<div>
 				<Sketch
 					className={style.canvasWrapper}

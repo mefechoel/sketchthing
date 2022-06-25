@@ -1,14 +1,14 @@
 use super::coord::Coord;
 
 pub struct Rectangle {
-	x: isize,
-	y: isize,
-	w: isize,
-	h: isize,
-	left: isize,
-	right: isize,
-	top: isize,
-	bottom: isize,
+	x: f32,
+	y: f32,
+	w: f32,
+	h: f32,
+	left: f32,
+	right: f32,
+	top: f32,
+	bottom: f32,
 }
 
 pub enum Quadrant {
@@ -24,44 +24,44 @@ pub trait Queryable {
 }
 
 impl Rectangle {
-	pub fn new(x: isize, y: isize, w: isize, h: isize) -> Self {
+	pub fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
 		Self {
 			x,
 			y,
 			w,
 			h,
-			left: x - w / 2,
-			right: x + w / 2,
-			top: y - h / 2,
-			bottom: y + h / 2,
+			left: x - w / 2.0,
+			right: x + w / 2.0,
+			top: y - h / 2.0,
+			bottom: y + h / 2.0,
 		}
 	}
 
 	pub fn subdivide(&self, quadrant: &Quadrant) -> Self {
 		match quadrant {
 			Quadrant::NorthEast => Self::new(
-				self.x + self.w / 4,
-				self.y - self.h / 4,
-				self.w / 2,
-				self.h / 2,
+				self.x + self.w / 4.0,
+				self.y - self.h / 4.0,
+				self.w / 2.0,
+				self.h / 2.0,
 			),
 			Quadrant::SouthEast => Self::new(
-				self.x + self.w / 4,
-				self.y + self.h / 4,
-				self.w / 2,
-				self.h / 2,
+				self.x + self.w / 4.0,
+				self.y + self.h / 4.0,
+				self.w / 2.0,
+				self.h / 2.0,
 			),
 			Quadrant::NorthWest => Self::new(
-				self.x - self.w / 4,
-				self.y - self.h / 4,
-				self.w / 2,
-				self.h / 2,
+				self.x - self.w / 4.0,
+				self.y - self.h / 4.0,
+				self.w / 2.0,
+				self.h / 2.0,
 			),
 			Quadrant::SouthWest => Self::new(
-				self.x - self.w / 4,
-				self.y + self.h / 4,
-				self.w / 2,
-				self.h / 2,
+				self.x - self.w / 4.0,
+				self.y + self.h / 4.0,
+				self.w / 2.0,
+				self.h / 2.0,
 			),
 		}
 	}
@@ -84,14 +84,14 @@ impl Queryable for Rectangle {
 }
 
 pub struct Circle {
-	x: isize,
-	y: isize,
+	x: f32,
+	y: f32,
 	r: f64,
 	r_squared: f64,
 }
 
 impl Circle {
-	pub fn new(x: isize, y: isize, r: f64) -> Self {
+	pub fn new(x: f32, y: f32, r: f64) -> Self {
 		Self {
 			x,
 			y,
@@ -106,7 +106,7 @@ impl Queryable for Circle {
 		// check if the point is in the circle by checking if the euclidean distance of
 		// the point and the center of the circle if smaller or equal to the radius of
 		// the circle
-		let d = (point.x() - self.x).pow(2) + (point.y() - self.y).pow(2);
+		let d = (point.x() - self.x).powf(2.0) + (point.y() - self.y).powf(2.0);
 		return d as f64 <= self.r_squared;
 	}
 
@@ -117,10 +117,10 @@ impl Queryable for Circle {
 		// radius of the circle
 		let r = self.r;
 
-		let w = range.w / 2;
-		let h = range.h / 2;
+		let w = range.w / 2.0;
+		let h = range.h / 2.0;
 
-		let edges = (x_dist - w).pow(2) + (y_dist - h).pow(2);
+		let edges = (x_dist - w).powf(2.0) + (y_dist - h).powf(2.0);
 
 		// no intersection
 		if x_dist as f64 > r + w as f64 || y_dist as f64 > r + h as f64 {
@@ -137,16 +137,17 @@ impl Queryable for Circle {
 	}
 }
 
-const DEFAULT_CAPACITY: usize = 32;
+const CAPACITY: usize = 8;
 
 pub struct QuadTree<T: Coord> {
 	root: Box<Node<T>>,
 }
+
 pub struct Node<T: Coord> {
 	size: usize,
+	own_size: usize,
 	boundary: Rectangle,
-	capacity: usize,
-	point: Option<T>,
+	points: [Option<T>; CAPACITY],
 	divided: bool,
 	northeast: Option<Box<Node<T>>>,
 	northwest: Option<Box<Node<T>>>,
@@ -155,12 +156,12 @@ pub struct Node<T: Coord> {
 }
 
 impl<T: Coord> Node<T> {
-	fn with_capacity(boundary: Rectangle, capacity: usize) -> Self {
+	fn new(boundary: Rectangle) -> Self {
 		Self {
 			size: 0,
+			own_size: 0,
 			boundary,
-			capacity,
-			point: None,
+			points: [None; CAPACITY],
 			divided: false,
 			northeast: None,
 			northwest: None,
@@ -169,22 +170,22 @@ impl<T: Coord> Node<T> {
 		}
 	}
 
+	fn with_capacity(boundary: Rectangle, _capacity: usize) -> Self {
+		Self::new(boundary)
+	}
+
 	fn subdivide(&mut self) {
-		self.northeast = Some(Box::new(Self::with_capacity(
+		self.northeast = Some(Box::new(Self::new(
 			self.boundary.subdivide(&Quadrant::NorthEast),
-			self.capacity,
 		)));
-		self.northwest = Some(Box::new(Self::with_capacity(
+		self.northwest = Some(Box::new(Self::new(
 			self.boundary.subdivide(&Quadrant::NorthWest),
-			self.capacity,
 		)));
-		self.southeast = Some(Box::new(Self::with_capacity(
+		self.southeast = Some(Box::new(Self::new(
 			self.boundary.subdivide(&Quadrant::SouthEast),
-			self.capacity,
 		)));
-		self.southwest = Some(Box::new(Self::with_capacity(
+		self.southwest = Some(Box::new(Self::new(
 			self.boundary.subdivide(&Quadrant::SouthWest),
-			self.capacity,
 		)));
 
 		self.divided = true;
@@ -195,9 +196,9 @@ impl<T: Coord> Node<T> {
 			return false;
 		}
 
-		let has_point = self
-			.point
-			.map_or(false, |p| p.x() == point.x() && p.y() == point.y());
+		let has_point = self.points.iter().any(|p| {
+			p.is_some() && p.unwrap().x() == point.x() && p.unwrap().y() == point.y()
+		});
 		if has_point {
 			return true;
 		}
@@ -205,22 +206,10 @@ impl<T: Coord> Node<T> {
 			return false;
 		}
 
-		self
-			.northeast
-			.as_ref()
-			.map_or(false, |node| node.contains(point)) ||
-			self
-				.northwest
-				.as_ref()
-				.map_or(false, |node| node.contains(point)) ||
-			self
-				.southeast
-				.as_ref()
-				.map_or(false, |node| node.contains(point)) ||
-			self
-				.southwest
-				.as_ref()
-				.map_or(false, |node| node.contains(point))
+		self.northeast.as_ref().unwrap().contains(point) ||
+			self.northwest.as_ref().unwrap().contains(point) ||
+			self.southeast.as_ref().unwrap().contains(point) ||
+			self.southwest.as_ref().unwrap().contains(point)
 	}
 
 	fn insert(&mut self, point: T) -> bool {
@@ -231,8 +220,14 @@ impl<T: Coord> Node<T> {
 			return false;
 		}
 
-		if self.point.is_none() {
-			self.point = Some(point);
+		if self.own_size < CAPACITY {
+			let insertion_index =
+				self.points.iter().position(|p| p.is_none()).expect(
+					"We've checked before, if there is space left for a new point, so \
+					 there must be an empty slot",
+				);
+			self.points[insertion_index] = Some(point);
+			self.own_size += 1;
 			self.size += 1;
 			return true;
 		}
@@ -241,22 +236,10 @@ impl<T: Coord> Node<T> {
 			self.subdivide();
 		}
 
-		let was_inserted = self
-			.northeast
-			.as_mut()
-			.map_or(false, |node| node.insert(point)) ||
-			self
-				.northwest
-				.as_mut()
-				.map_or(false, |node| node.insert(point)) ||
-			self
-				.southeast
-				.as_mut()
-				.map_or(false, |node| node.insert(point)) ||
-			self
-				.southwest
-				.as_mut()
-				.map_or(false, |node| node.insert(point));
+		let was_inserted = self.northeast.as_mut().unwrap().insert(point) ||
+			self.northwest.as_mut().unwrap().insert(point) ||
+			self.southeast.as_mut().unwrap().insert(point) ||
+			self.southwest.as_mut().unwrap().insert(point);
 
 		self.size += if was_inserted { 1 } else { 0 };
 		was_inserted
@@ -267,34 +250,24 @@ impl<T: Coord> Node<T> {
 			return false;
 		}
 
-		if let Some(p) = self.point {
-			if p.x() == point.x() && p.y() == point.y() {
-				self.point = None;
-				self.size -= 1;
-				return true;
-			}
+		let index = self.points.iter().position(|p| {
+			p.is_some() && p.unwrap().x() == point.x() && p.unwrap().y() == point.y()
+		});
+		if let Some(i) = index {
+			self.points[i] = None;
+			self.own_size -= 1;
+			self.size -= 1;
+			return true;
 		}
 
 		if !self.divided {
 			return false;
 		}
 
-		let was_removed = self
-			.northeast
-			.as_mut()
-			.map_or(false, |node| node.remove(point)) ||
-			self
-				.northwest
-				.as_mut()
-				.map_or(false, |node| node.remove(point)) ||
-			self
-				.southeast
-				.as_mut()
-				.map_or(false, |node| node.remove(point)) ||
-			self
-				.southwest
-				.as_mut()
-				.map_or(false, |node| node.remove(point));
+		let was_removed = self.northeast.as_mut().unwrap().remove(point) ||
+			self.northwest.as_mut().unwrap().remove(point) ||
+			self.southeast.as_mut().unwrap().remove(point) ||
+			self.southwest.as_mut().unwrap().remove(point);
 
 		self.size -= if was_removed { 1 } else { 0 };
 		was_removed
@@ -305,19 +278,21 @@ impl<T: Coord> Node<T> {
 			return;
 		}
 
-		self.point.as_ref().map(|p| {
-			if range.contains(p) {
-				found.push(*p);
+		for p in self.points.iter() {
+			if let Some(p) = p {
+				if range.contains(p) {
+					found.push(*p);
+				}
 			}
-		});
+		}
 		if !self.divided {
 			return;
 		}
 
-		self.northwest.as_ref().map(|node| node.query(range, found));
-		self.northeast.as_ref().map(|node| node.query(range, found));
-		self.southwest.as_ref().map(|node| node.query(range, found));
-		self.southeast.as_ref().map(|node| node.query(range, found));
+		self.northwest.as_ref().unwrap().query(range, found);
+		self.northeast.as_ref().unwrap().query(range, found);
+		self.southwest.as_ref().unwrap().query(range, found);
+		self.southeast.as_ref().unwrap().query(range, found);
 	}
 
 	fn size(&self) -> usize {
@@ -326,14 +301,10 @@ impl<T: Coord> Node<T> {
 }
 
 impl<T: Coord> QuadTree<T> {
-	pub fn with_capacity(boundary: Rectangle, capacity: usize) -> Self {
-		Self {
-			root: Box::new(Node::with_capacity(boundary, capacity)),
-		}
-	}
-
 	pub fn new(boundary: Rectangle) -> Self {
-		Self::with_capacity(boundary, DEFAULT_CAPACITY)
+		Self {
+			root: Box::new(Node::new(boundary)),
+		}
 	}
 
 	pub fn contains(&self, point: &T) -> bool {
@@ -361,110 +332,163 @@ impl<T: Coord> QuadTree<T> {
 
 #[cfg(test)]
 mod test {
-	use std::collections::HashSet;
-
 	use super::*;
-	use crate::Point;
+	use crate::{BitPoint, Point};
+
+	const BIT_POINTS: &str = include_str!("./points.txt");
+
+	const P: fn(x: f32, y: f32) -> Point = Point::new;
+
+	#[test]
+	fn rect_contains() {
+		let r = Rectangle::new(20.0, 20.0, 40.0, 40.0);
+		assert!(r.contains(&P(0.0, 0.0)), "0, 0");
+		assert!(r.contains(&P(0.0, 39.0)), "0, 39");
+		assert!(r.contains(&P(39.0, 0.0)), "39, 0");
+		assert!(r.contains(&P(20.0, 20.0)), "20, 20");
+		assert!(!r.contains(&P(0.0, 40.001)), "0, 40.001");
+		assert!(!r.contains(&P(40.001, 0.0)), "40.001, 0");
+		assert!(!r.contains(&P(40.001, 40.001)), "40.001, 40.001");
+	}
+
+	#[test]
+	fn huge() {
+		let points: Vec<_> = BIT_POINTS
+			.split_whitespace()
+			.map(|bp_str| {
+				bp_str
+					.parse::<u32>()
+					.expect("All of the contents of points.txt are numbers")
+			})
+			.map(BitPoint::from_raw)
+			.map(Point::from)
+			.collect();
+		let point_len = points.len();
+		let mut max_x = 0.0;
+		let mut max_y = 0.0;
+		for p in points.iter() {
+			if p.x() > max_x {
+				max_x = p.x();
+			}
+			if p.y() > max_y {
+				max_y = p.y();
+			}
+		}
+		let mut qt = QuadTree::<Point>::new(Rectangle::new(
+			max_x / 2.0,
+			max_y / 2.0,
+			max_x,
+			max_y,
+		));
+		for p in points {
+			qt.insert(p);
+		}
+		assert_eq!(qt.size(), point_len);
+	}
 
 	#[test]
 	fn rect() {
-		let r = Rectangle::new(20, 20, 40, 40);
-		assert_eq!(r.contains(&Point::new(0, 0)), true);
-		assert_eq!(r.contains(&Point::new(20, 20)), true);
-		assert_eq!(r.contains(&Point::new(39, 39)), true);
-		assert_eq!(r.contains(&Point::new(40, 40)), true);
-		assert_eq!(r.contains(&Point::new(41, 41)), false);
-		assert_eq!(r.contains(&Point::new(50, 20)), false);
-		assert_eq!(r.contains(&Point::new(20, 50)), false);
+		let r = Rectangle::new(20.0, 20.0, 40.0, 40.0);
+		assert_eq!(r.contains(&Point::new(0.0, 0.0)), true, "0.0, 0.0");
+		assert_eq!(r.contains(&Point::new(20.0, 20.0)), true, "20.0, 20.0");
+		assert_eq!(r.contains(&Point::new(39.0, 39.0)), true, "39.0, 39.0");
+		assert_eq!(
+			r.contains(&Point::new(39.999, 39.999)),
+			true,
+			"39.999, 39.999"
+		);
+		assert_eq!(r.contains(&Point::new(40.0, 40.0)), true, "40.0, 40.0");
+		assert_eq!(r.contains(&Point::new(41.0, 41.0)), false, "41.0, 41.0");
+		assert_eq!(r.contains(&Point::new(50.0, 20.0)), false, "50.0, 20.0");
+		assert_eq!(r.contains(&Point::new(20.0, 50.0)), false, "20.0, 50.0");
 	}
 
 	#[test]
 	fn qt_new() {
-		let qt = QuadTree::<Point>::new(Rectangle::new(20, 20, 40, 40));
+		let qt = QuadTree::<Point>::new(Rectangle::new(20.0, 20.0, 40.0, 40.0));
 		assert_eq!(qt.size(), 0);
 	}
 
 	#[test]
 	fn qt_with_capacity() {
-		let qt =
-			QuadTree::<Point>::with_capacity(Rectangle::new(20, 20, 40, 40), 4);
+		let qt = QuadTree::<Point>::new(Rectangle::new(20.0, 20.0, 40.0, 40.0));
 		assert_eq!(qt.size(), 0);
 	}
 
 	#[test]
 	fn qt_contains() {
-		let mut qt = QuadTree::new(Rectangle::new(20, 20, 40, 40));
-		qt.insert(Point::new(10, 10));
-		qt.insert(Point::new(20, 20));
-		qt.insert(Point::new(30, 30));
-		assert!(qt.contains(&Point::new(10, 10)));
-		assert!(qt.contains(&Point::new(20, 20)));
-		assert!(qt.contains(&Point::new(30, 30)));
-		assert!(!qt.contains(&Point::new(25, 25)));
-		assert!(!qt.contains(&Point::new(300, 300)));
-		qt.remove(&Point::new(30, 30));
-		assert!(!qt.contains(&Point::new(30, 30)));
-		assert!(qt.contains(&Point::new(10, 10)));
-		assert!(qt.contains(&Point::new(20, 20)));
+		let mut qt = QuadTree::new(Rectangle::new(20.0, 20.0, 40.0, 40.0));
+		qt.insert(Point::new(10.0, 10.0));
+		qt.insert(Point::new(20.0, 20.0));
+		qt.insert(Point::new(30.0, 30.0));
+		assert!(qt.contains(&Point::new(10.0, 10.0)));
+		assert!(qt.contains(&Point::new(20.0, 20.0)));
+		assert!(qt.contains(&Point::new(30.0, 30.0)));
+		assert!(!qt.contains(&Point::new(25.0, 25.0)));
+		assert!(!qt.contains(&Point::new(300.0, 300.0)));
+		qt.remove(&Point::new(30.0, 30.0));
+		assert!(!qt.contains(&Point::new(30.0, 30.0)));
+		assert!(qt.contains(&Point::new(10.0, 10.0)));
+		assert!(qt.contains(&Point::new(20.0, 20.0)));
 	}
 
 	#[test]
 	fn qt_insert() {
-		let mut qt = QuadTree::new(Rectangle::new(20, 20, 40, 40));
-		assert_eq!(qt.insert(Point::new(10, 10)), true);
-		assert_eq!(qt.insert(Point::new(20, 20)), true);
-		assert_eq!(qt.insert(Point::new(30, 30)), true);
+		let mut qt = QuadTree::new(Rectangle::new(20.0, 20.0, 40.0, 40.0));
+		assert_eq!(qt.insert(Point::new(10.0, 10.0)), true);
+		assert_eq!(qt.insert(Point::new(20.0, 20.0)), true);
+		assert_eq!(qt.insert(Point::new(30.0, 30.0)), true);
 		assert_eq!(qt.size(), 3);
-		assert_eq!(qt.insert(Point::new(300, 300)), false);
+		assert_eq!(qt.insert(Point::new(300.0, 300.0)), false);
 		assert_eq!(qt.size(), 3);
-		assert_eq!(qt.insert(Point::new(30, 30)), false);
+		assert_eq!(qt.insert(Point::new(30.0, 30.0)), false);
 		assert_eq!(qt.size(), 3);
 	}
 
 	#[test]
 	fn qt_remove() {
-		let mut qt = QuadTree::new(Rectangle::new(20, 20, 40, 40));
-		qt.insert(Point::new(10, 10));
-		qt.insert(Point::new(20, 20));
-		qt.insert(Point::new(30, 30));
-		assert_eq!(qt.remove(&Point::new(25, 35)), false);
+		let mut qt = QuadTree::new(Rectangle::new(20.0, 20.0, 40.0, 40.0));
+		qt.insert(Point::new(10.0, 10.0));
+		qt.insert(Point::new(20.0, 20.0));
+		qt.insert(Point::new(30.0, 30.0));
+		assert_eq!(qt.remove(&Point::new(25.0, 35.0)), false);
 		assert_eq!(qt.size(), 3);
-		assert_eq!(qt.remove(&Point::new(30, 30)), true);
+		assert_eq!(qt.remove(&Point::new(30.0, 30.0)), true);
 		assert_eq!(qt.size(), 2);
-		assert_eq!(qt.remove(&Point::new(30, 30)), false);
+		assert_eq!(qt.remove(&Point::new(30.0, 30.0)), false);
 		assert_eq!(qt.size(), 2);
-		assert_eq!(qt.remove(&Point::new(20, 20)), true);
+		assert_eq!(qt.remove(&Point::new(20.0, 20.0)), true);
 		assert_eq!(qt.size(), 1);
-		assert_eq!(qt.remove(&Point::new(10, 10)), true);
+		assert_eq!(qt.remove(&Point::new(10.0, 10.0)), true);
 		assert_eq!(qt.size(), 0);
-		assert_eq!(qt.remove(&Point::new(10, 10)), false);
+		assert_eq!(qt.remove(&Point::new(10.0, 10.0)), false);
 		assert_eq!(qt.size(), 0);
 	}
 
 	#[test]
 	fn qt_query() {
-		let mut qt = QuadTree::new(Rectangle::new(20, 20, 40, 40));
+		let mut qt = QuadTree::new(Rectangle::new(20.0, 20.0, 40.0, 40.0));
 
 		let cluster_1 = vec![
-			Point::new(10, 10),
-			Point::new(8, 10),
-			Point::new(12, 10),
-			Point::new(10, 8),
-			Point::new(10, 12),
+			Point::new(10.0, 10.0),
+			Point::new(8.0, 10.0),
+			Point::new(12.0, 10.0),
+			Point::new(10.0, 8.0),
+			Point::new(10.0, 12.0),
 		];
 		let cluster_2 = vec![
-			Point::new(20, 20),
-			Point::new(18, 20),
-			Point::new(22, 20),
-			Point::new(20, 18),
-			Point::new(20, 22),
+			Point::new(20.0, 20.0),
+			Point::new(18.0, 20.0),
+			Point::new(22.0, 20.0),
+			Point::new(20.0, 18.0),
+			Point::new(20.0, 22.0),
 		];
 		let cluster_3 = vec![
-			Point::new(30, 30),
-			Point::new(28, 30),
-			Point::new(32, 30),
-			Point::new(30, 28),
-			Point::new(30, 32),
+			Point::new(30.0, 30.0),
+			Point::new(28.0, 30.0),
+			Point::new(32.0, 30.0),
+			Point::new(30.0, 28.0),
+			Point::new(30.0, 32.0),
 		];
 		let all_points: Vec<_> =
 			vec![cluster_1.clone(), cluster_2.clone(), cluster_3.clone()]
@@ -475,47 +499,100 @@ mod test {
 			qt.insert(p);
 		}
 
-		let rect_1 = Rectangle::new(10, 10, 6, 6);
-		let circle_1 = Circle::new(10, 10, 3.0);
-		let rect_small_1 = Rectangle::new(10, 10, 1, 1);
-		let circle_small_1 = Circle::new(10, 10, 0.5);
+		let rect_1 = Rectangle::new(10.0, 10.0, 6.0, 6.0);
+		let circle_1 = Circle::new(10.0, 10.0, 3.0);
+		let rect_small_1 = Rectangle::new(10.0, 10.0, 1.0, 1.0);
+		let circle_small_1 = Circle::new(10.0, 10.0, 0.5);
 
-		let rect_2 = Rectangle::new(20, 20, 6, 6);
-		let circle_2 = Circle::new(20, 20, 3.0);
-		let rect_small_2 = Rectangle::new(20, 20, 1, 1);
-		let circle_small_2 = Circle::new(20, 20, 0.5);
+		let rect_2 = Rectangle::new(20.0, 20.0, 6.0, 6.0);
+		let circle_2 = Circle::new(20.0, 20.0, 3.0);
+		let rect_small_2 = Rectangle::new(20.0, 20.0, 1.0, 1.0);
+		let circle_small_2 = Circle::new(20.0, 20.0, 0.5);
 
-		let rect_3 = Rectangle::new(30, 30, 6, 6);
-		let circle_3 = Circle::new(30, 30, 3.0);
-		let rect_small_3 = Rectangle::new(30, 30, 1, 1);
-		let circle_small_3 = Circle::new(30, 30, 0.5);
+		let rect_3 = Rectangle::new(30.0, 30.0, 6.0, 6.0);
+		let circle_3 = Circle::new(30.0, 30.0, 3.0);
+		let rect_small_3 = Rectangle::new(30.0, 30.0, 1.0, 1.0);
+		let circle_small_3 = Circle::new(30.0, 30.0, 0.5);
 
 		fn assert_same_contents<Q: Queryable>(
 			qt: &QuadTree<Point>,
 			shape: &Q,
 			expected: Vec<Point>,
+			msg: &str,
 		) {
 			assert_eq!(
-				HashSet::<Point>::from_iter(qt.query(shape)),
-				HashSet::from_iter(expected.clone())
+				qt.query(shape).sort_by(|a, b| a.partial_cmp(b).unwrap()),
+				expected.clone().sort_by(|a, b| a.partial_cmp(b).unwrap()),
+				"{}",
+				msg
 			);
 		}
 
-		assert_same_contents(&qt, &rect_1, cluster_1.clone());
-		assert_same_contents(&qt, &circle_1, cluster_1.clone());
-		assert_same_contents(&qt, &rect_small_1, vec![cluster_1[0]]);
-		assert_same_contents(&qt, &circle_small_1, vec![cluster_1[0]]);
+		assert_same_contents(&qt, &rect_1, cluster_1.clone(), "rect_1, cluster_1");
+		assert_same_contents(
+			&qt,
+			&circle_1,
+			cluster_1.clone(),
+			"circle_1, cluster_1",
+		);
+		assert_same_contents(
+			&qt,
+			&rect_small_1,
+			vec![cluster_1[0]],
+			"rect_small_1, cluster_1[0]",
+		);
+		assert_same_contents(
+			&qt,
+			&circle_small_1,
+			vec![cluster_1[0]],
+			"circle_small_1, cluster_1[0]",
+		);
 
-		assert_same_contents(&qt, &rect_2, cluster_2.clone());
-		assert_same_contents(&qt, &circle_2, cluster_2.clone());
-		assert_same_contents(&qt, &rect_small_2, vec![cluster_2[0]]);
-		assert_same_contents(&qt, &circle_small_2, vec![cluster_2[0]]);
+		assert_same_contents(&qt, &rect_2, cluster_2.clone(), "rect_2, cluster_2");
+		assert_same_contents(
+			&qt,
+			&circle_2,
+			cluster_2.clone(),
+			"circle_2, cluster_2",
+		);
+		assert_same_contents(
+			&qt,
+			&rect_small_2,
+			vec![cluster_2[0]],
+			"rect_small_2, cluster_2[0]",
+		);
+		assert_same_contents(
+			&qt,
+			&circle_small_2,
+			vec![cluster_2[0]],
+			"circle_small_2, cluster_2[0]",
+		);
 
-		assert_same_contents(&qt, &rect_3, cluster_3.clone());
-		assert_same_contents(&qt, &circle_3, cluster_3.clone());
-		assert_same_contents(&qt, &rect_small_3, vec![cluster_3[0]]);
-		assert_same_contents(&qt, &circle_small_3, vec![cluster_3[0]]);
+		assert_same_contents(&qt, &rect_3, cluster_3.clone(), "rect_3, cluster_3");
+		assert_same_contents(
+			&qt,
+			&circle_3,
+			cluster_3.clone(),
+			"circle_3, cluster_3",
+		);
+		assert_same_contents(
+			&qt,
+			&rect_small_3,
+			vec![cluster_3[0]],
+			"rect_small_3, cluster_3[0]",
+		);
+		assert_same_contents(
+			&qt,
+			&circle_small_3,
+			vec![cluster_3[0]],
+			"circle_small_3, cluster_3[0]",
+		);
 
-		assert_same_contents(&qt, &Rectangle::new(5, 5, 1, 1), vec![]);
+		assert_same_contents(
+			&qt,
+			&Rectangle::new(5.0, 5.0, 1.0, 1.0),
+			vec![],
+			"5.0, 5.0, 1.0, 1.0",
+		);
 	}
 }

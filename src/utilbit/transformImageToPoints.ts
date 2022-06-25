@@ -1,3 +1,4 @@
+import type p5 from "p5";
 import { matchToSize } from ".";
 import {
 	dropOut,
@@ -7,8 +8,10 @@ import {
 } from "./points";
 import { sort } from "../../pkg";
 import type { BitPoint, ListLike, TransformConfig } from "./types";
+import type { Ref } from "preact/hooks";
 
-let sortMode: "ts" | "wasm" = "ts";
+let sortMode: "ts" | "wasm" = "wasm";
+let showFrameRate = false;
 
 interface IOSizes {
 	sourceWidth: number;
@@ -33,10 +36,34 @@ export function fitDimensions(sizes: IOSizes) {
 	return { width: desiredWidth, height: desiredHeight };
 }
 
-function createTransformImageToPoints(randomSource?: () => number) {
+function avg(nums: number[]) {
+	return nums.slice().sort((a, b) => a - b)[Math.floor(nums.length / 2)];
+}
+
+function createTransformImageToPoints(
+	p: p5,
+	randomSource?: () => number,
+	frameRateDisplayRef?: Ref<HTMLDivElement>,
+) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	(window as any).toggleFrameRate = () => {
+		if (!frameRateDisplayRef?.current) return;
+		if (showFrameRate) {
+			frameRateDisplayRef.current.style.display = "none";
+			showFrameRate = false;
+		} else {
+			frameRateDisplayRef.current.style.display = "grid";
+			showFrameRate = true;
+		}
+	};
+
 	function dropOutP5Random<T>(l: T[], percentage: number) {
 		return dropOutRandom(l, percentage, randomSource);
 	}
+
+	const frameRateL = 16;
+	const frameRates: number[] = new Array(frameRateL).fill(0);
+	let frameI = 0;
 
 	return function transformImageToPoints(config: TransformConfig) {
 		const {
@@ -49,6 +76,11 @@ function createTransformImageToPoints(randomSource?: () => number) {
 			targetHeight,
 			getPixelValue,
 		} = config;
+
+		if (frameRateDisplayRef?.current && showFrameRate) {
+			frameRates[frameI++ % frameRateL] = p.frameRate();
+			frameRateDisplayRef.current.innerText = "" + Math.round(avg(frameRates));
+		}
 
 		const dropOutFn = randomDropout ? dropOutP5Random : dropOut;
 
@@ -63,7 +95,7 @@ function createTransformImageToPoints(randomSource?: () => number) {
 		let sorted: ListLike<BitPoint>;
 		if (sortMode === "wasm") {
 			const u32 = Uint32Array.from(points);
-			sorted = sort(u32, targetWidth, targetHeight, 2, 2);
+			sorted = sort(u32, targetWidth, targetHeight, 2);
 		} else {
 			sorted = sortByDistance2d(points, targetWidth, targetHeight);
 		}
@@ -76,6 +108,7 @@ function createTransformImageToPoints(randomSource?: () => number) {
 	};
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).sortMode = {
 	wasm() {
 		sortMode = "wasm";
