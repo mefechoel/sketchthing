@@ -10,3 +10,4 @@
 test/public/*
 **/tsconfig.json
 **/*.html
+pkg
