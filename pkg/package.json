@@ -1,0 +1,12 @@
+{
+  "name": "quad",
+  "version": "0.1.0",
+  "files": [
+    "quad_bg.wasm",
+    "quad.js",
+    "quad.d.ts"
+  ],
+  "module": "quad.js",
+  "types": "quad.d.ts",
+  "sideEffects": false
+}

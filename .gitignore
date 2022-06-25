@@ -5,5 +5,4 @@ distSSR
 *.local
 tmp
 /target
-pkg
 @wasm
