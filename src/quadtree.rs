@@ -170,10 +170,6 @@ impl<T: Coord> Node<T> {
 		}
 	}
 
-	fn with_capacity(boundary: Rectangle, _capacity: usize) -> Self {
-		Self::new(boundary)
-	}
-
 	fn subdivide(&mut self) {
 		self.northeast = Some(Box::new(Self::new(
 			self.boundary.subdivide(&Quadrant::NorthEast),
@@ -226,7 +222,9 @@ impl<T: Coord> Node<T> {
 					"We've checked before, if there is space left for a new point, so \
 					 there must be an empty slot",
 				);
-			self.points[insertion_index] = Some(point);
+			unsafe {
+				*self.points.get_unchecked_mut(insertion_index) = Some(point);
+			}
 			self.own_size += 1;
 			self.size += 1;
 			return true;
@@ -254,7 +252,9 @@ impl<T: Coord> Node<T> {
 			p.is_some() && p.unwrap().x() == point.x() && p.unwrap().y() == point.y()
 		});
 		if let Some(i) = index {
-			self.points[i] = None;
+			unsafe {
+				*self.points.get_unchecked_mut(i) = None;
+			}
 			self.own_size -= 1;
 			self.size -= 1;
 			return true;
